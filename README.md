@@ -1,72 +1,24 @@
-# Obsidian Home tab
-Obsidian Home tab is an [Obsidian](https://obsidian.md/) plugin that adds a browser-like home default new tab with a search bar and a grid of starred files.
+# Obsidian Home Tab & Activity History
 
-You can search any local file in your vault, both markdown notes and attachments.
+Home Tab 插件魔改，在 Home Tab 插件的 New Tab 界面下方添加了 Activity History 插件用到的 svelte-heatmap。热力图根据你每天库的字节大小变化来确定颜色深浅，每 200s 会记录一次。
 
-![](images/home-tab.png)
+觉得好用可以给他们点点 star。
 
-This plugin is not meant to be a replacement for the default Quick switcher or any alternative one like [Another quick switcher](https://github.com/tadashi-aikawa/obsidian-another-quick-switcher) (from which I took inspiration), but rather a faster way to open a note or a file after opening a new tab.
+- [olrenso/obsidian-home-tab: A browser-like search tab for your local files in Obsidian. (github.com)](https://github.com/olrenso/obsidian-home-tab)
+- [Darakah/obsidian-activity-history: Activity monitor for Vault & specified projects (github.com)](https://github.com/Darakah/obsidian-activity-history)
+- [scottbedard/svelte-heatmap: A light weight and customizable version of GitHub's contribution graph](https://github.com/scottbedard/svelte-heatmap)
 
-## How to use
-By default, every new empty tab is automatically replaced with the Home tab view. You can disable this behavior in the settings and manually open a new Home tab through the command palette with the commands `Home tab: Open new Home tab` or `Home tab: Replace current tab`.
+## 效果图
 
-## Features
-### Filter search by file type or extension
-To easily find a file you can filter the search by using filters for the file type or the file extension.
+![](./images/效果图.png)
 
-You can activate a filter by writing the filter key (see table below) and pressing tab. To remove the filter press backspace.
+![](./images/效果图-PLUSONE.png)
 
-![](images/search_filters.png)
+![](./images/效果图-Huajin.png)
 
-#### Filters keys
-The following filters are available:
+主题用的是 [Akifyss/obsidian-border: A theme for obsidian.md (github.com)](https://github.com/Akifyss/obsidian-border)
 
-| File type | File extension | 
-| :-: | :-: | 
-| `markdown` | `md`|
-| `image` | `png`, `jpg`, `jpeg`, `svg`, `gif`, `bmp` | 
-| `video` | `mp4`, `webm`, `ogv`, `mov`, `mkv` |
-| `audio` | `mp3`, `wav`, `m4a`, `ogg`, `3gp`, `flac` |
-| `pdf` | `pdf` |  
+## 补充
 
-![](images/filters_gif.gif)
-
-### Embedded search bar
-You can embed the Home tab view in any note with options to show recent files, starred files, or only the search bar.
-
-To embed the search bar to a note, you have to create a `search-bar` code block (see the following example).
-
-To show only the search bar, without the title and the logo/icon, add (in a new line) `only search bar`.
-To show the starred and recent files add, respectively, `show starred files` and `show recent files`.
-
-For example, the following code block will render the search bar and the starred files.
-````text
-```search-bar
-only search bar
-show starred files
-```
-````
-
-![](images/embedded_searchbar.png)
-
-
-### Starred files
-If enabled, starred files are automatically displayed under the search bar.
-
-By hovering the top right corner, you can unstar a file or change the displayed icon.
-
-![](images/starred_files-options.png)
-
-## Settings
-
-![](images/settings-tab.png)
-
----
-## Known issues
-The plugin may not work with (or interfere with) other plugins that replace the new tabs with their custom view, such as the [Obsidian-Surfing](https://github.com/PKM-er/Obsidian-Surfing) plugin.
-
----
-# How to install
-The plugin is available directly from the [Obsidian plugin browser](https://obsidian.md/plugins?id=home-tab).
-Alternatively, you can install with [BRAT](https://github.com/TfTHacker/obsidian42-brat) by using the following links: `https://github.com/olrenso/Obsidian-home-tab` or `olrenso/Obsidian-home-tab`.
+插件目前还没完全完工，热力图的各种属性的修改还没写到设置中，有兴趣的可以试用，担心的可以事先保存下自己 home-tab 插件中的 data.json 文件，这里面放的是你的配置，如果丢了直接在 obsidian 的 home-tab 设置重新修改设置就行。
 

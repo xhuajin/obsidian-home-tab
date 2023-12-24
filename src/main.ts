@@ -4,6 +4,7 @@ import { HomeTabSettingTab, DEFAULT_SETTINGS, type HomeTabSettings } from './set
 import { pluginSettingsStore, bookmarkedFiles } from './store'
 import { RecentFileManager } from './recentFiles';
 import { bookmarkedFilesManager } from './bookmarkedFiles';
+import { updateActivityAll } from './utils/updateActivityAll';
 
 declare module 'obsidian'{
 	interface App{
@@ -19,9 +20,9 @@ declare module 'obsidian'{
 		}
 	}
 	interface Plugins{
-		getPlugin: (id: string) => Plugin_2
+		getPlugin: (id: string) => Plugin
 	}
-	interface BookmarksPlugin extends Plugin_2{
+	interface BookmarksPlugin extends Plugin{
 		instance: {
 			items: BookmarkItem[]
 			getBookmarks: () => BookmarkItem[]
@@ -80,6 +81,12 @@ export default class HomeTab extends Plugin {
 
 		this.recentFileManager = new RecentFileManager(app, this)
 		this.recentFileManager.load()
+
+    // Update all tracked projects on events
+		setInterval(() => {
+			updateActivityAll(this, this.settings, this.app.vault.getMarkdownFiles());
+			this.saveSettings();
+		  }, 200000);
 
 		this.addCommand({
 			id: 'open-new-home-tab',

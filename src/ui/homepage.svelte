@@ -5,16 +5,20 @@
     import { getIcon, View } from 'obsidian'
     import type { EmbeddedHomeTab } from '../homeView';
     import type HomeTabSearchBar from 'src/homeTabSearchbar';
-	import type { recentFile } from 'src/recentFiles';
-	import BookmarkedFiles from './bookmarkedFiles.svelte';
-	import RecentFiles from './recentFiles.svelte';
-	import type { bookmarkedFile } from 'src/bookmarkedFiles';
-	import type HomeTab from 'src/main';
+    import type HomeTabHeatMap from 'src/homeTabHeatMap';
+    import type { recentFile } from 'src/recentFiles';
+    import BookmarkedFiles from './bookmarkedFiles.svelte';
+    import RecentFiles from './recentFiles.svelte';
+    import type { bookmarkedFile } from 'src/bookmarkedFiles';
+    import type HomeTab from 'src/main';
+    import Heatmap from './heatmap.svelte';
+    
     
     export let view: View
     export let HomeTabSearchBar: HomeTabSearchBar
     export let plugin: HomeTab
     export let embeddedView: EmbeddedHomeTab | undefined = undefined
+    export let homeTabHeapMap: HomeTabHeatMap | undefined = undefined
 
     // let viewType: 'embed' | 'standalone' = view instanceof HomeTabView ? 'standalone' : 'embed'
     let bookmarkedFileList: bookmarkedFile[] = []
@@ -41,8 +45,11 @@
     const renderRecentFiles: boolean = embeddedView ? embeddedView.recentFiles : pluginSettings.showRecentFiles
     // @ts-ignore
     const renderbookmarkedFiles: boolean = embeddedView ? embeddedView.bookmarkedFiles : pluginSettings.showbookmarkedFiles
+    // @ts-ignore
+    // const renderHeatMap: boolean = embeddedView ? embeddedView.heatmap : pluginSettings.showHeatMap
+
 </script>
-  
+
 <main class="home-tab" class:embedded={embeddedView}>
     {#if !embeddedView?.searchbarOnly}
         <div class="home-tab-wordmark-container">
@@ -107,8 +114,10 @@
     {#if plugin.recentFileManager && recentFileList.length > 0  && renderRecentFiles}
         <RecentFiles {recentFileList} {view} {pluginSettings} recentFileManager={plugin.recentFileManager}/>
     {/if}
+
+    <Heatmap {homeTabHeapMap}/>
 </main>
-  
+
 <style>
     .home-tab-logo svg{
         height: unset;

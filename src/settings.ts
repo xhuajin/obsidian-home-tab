@@ -9,6 +9,8 @@ import fontSuggester from './suggester/fontSuggester'
 import type { recentFileStore } from './recentFiles'
 import type { bookmarkedFileStore } from './bookmarkedFiles'
 import { checkFont } from './utils/fontValidator'
+import type { ActivityHistory } from './types'
+import { getTimestamp } from './utils/getTimestamp'
 
 type ColorChoices = 'default' | 'accentColor' | 'custom'
 type LogoChoiches = 'default' | 'imagePath' | 'imageLink' | 'lucideIcon' | 'none'
@@ -55,6 +57,7 @@ export interface HomeTabSettings extends ObjectKeys{
     closePreviousSessionTabs: boolean
     omnisearch: boolean
     showOmnisearchExcerpt: boolean
+    activityHistory: ActivityHistory[]
 }
 
 export const DEFAULT_SETTINGS: HomeTabSettings = {
@@ -88,6 +91,8 @@ export const DEFAULT_SETTINGS: HomeTabSettings = {
     closePreviousSessionTabs: false,
     omnisearch: false,
     showOmnisearchExcerpt: true,
+    firstRun: true,
+    activityHistory: [{path: '/', size: [{date: getTimestamp(), value: 0}]}],
 }
 
 

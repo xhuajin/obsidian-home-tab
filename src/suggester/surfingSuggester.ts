@@ -1,5 +1,5 @@
 import type Fuse from 'fuse.js'
-import { Platform, Plugin_2, View, WorkspaceLeaf, type App } from 'obsidian'
+import { Platform, Plugin, View, WorkspaceLeaf, type App } from 'obsidian'
 import type HomeTab from '../main'
 import type HomeTabSearchBar from "src/homeTabSearchbar"
 import { TextInputSuggester } from './suggester'
@@ -8,7 +8,7 @@ import { get } from 'svelte/store'
 import SurfingSuggestion from 'src/ui/svelteComponents/surfingSuggestion.svelte'
 import { SurfingItemFuzzySearch } from './fuzzySearch'
 
-interface SurfingPlugin extends Plugin_2{
+interface SurfingPlugin extends Plugin{
     settings: SurfingSettings
 }
 interface SurfingSettings{

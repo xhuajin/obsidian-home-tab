@@ -1,7 +1,9 @@
 import { FileView, MarkdownRenderChild, View, WorkspaceLeaf } from "obsidian";
 import type HomeTab from "./main";
+import type { ActivityHistory } from "./types";
 import Homepage from './ui/homepage.svelte'
 import HomeTabSearchBar from "./homeTabSearchbar";
+import HomeTabHeatMap from "./homeTabHeatMap";
 
 export const VIEW_TYPE = "home-tab-view";
 
@@ -69,6 +71,7 @@ export class HomeTabView extends FileView{
     homepage: Homepage
     searchBar: HomeTabSearchBar
     containerEl: HTMLElement
+    heatmap: HomeTabHeatMap
 
     constructor(leaf: WorkspaceLeaf, plugin: HomeTab) {
         super(leaf);
@@ -79,6 +82,16 @@ export class HomeTabView extends FileView{
         this.icon = 'search'
 
         this.searchBar = new HomeTabSearchBar(this.plugin, this)
+
+        // Get activity history for specified project
+        let settings = this.plugin.settings
+        let activity = getProjectActivityHistory("/", settings.activityHistory)?.size
+        let currentYear = new Date().getFullYear().toString();
+        // if no activity history available add placeholder
+        if (!activity) {
+          activity = [{ date: `${currentYear}-01-01`, value: 0 }]
+        }
+        this.heatmap = new HomeTabHeatMap(new Date().getFullYear().toString(), activity)
     }
 
     getViewType() {
@@ -95,11 +108,35 @@ export class HomeTabView extends FileView{
             props:{
                 plugin: this.plugin,
                 view: this,
-                HomeTabSearchBar: this.searchBar
+                HomeTabSearchBar: this.searchBar,
+                homeTabHeapMap: this.heatmap
             }
         });
         this.searchBar.load()
         this.searchBar.focusSearchbar()
+
+
+        // // Get activity history for specified project
+        // let settings = this.plugin.settings
+        // let activity = getProjectActivityHistory("/", settings.activityHistory)?.size
+        // let currentYear = new Date().getFullYear().toString();
+        // // if no activity history available add placeholder
+        // if (!activity) {
+        //   activity = [{ date: `${currentYear}-01-01`, value: 0 }]
+        // }
+
+        // this.heatmap = new HeapMap({
+        //     target: this.contentEl,
+        //     props: {
+        //       year: new Date().getFullYear().toString(),
+        //       data: activity,
+        //       colors: [settings.activityColor1, settings.activityColor2, settings.activityColor3, settings.activityColor4],
+        //       textColor: settings.textColor,
+        //       emptyColor: settings.emptyColor,
+        //       cellRadius: settings.cellRadius,
+        //       type: settings.type
+        //     }
+        // })
 
         // this.fileSuggester = new HomeTabFileSuggester(this.app, this.plugin, this,
             // get(this.searchBarEl), get(this.suggestionContainerEl))
@@ -108,5 +145,15 @@ export class HomeTabView extends FileView{
     async onClose(): Promise<void>{
         this.searchBar.fileSuggester.close()
         this.homepage.$destroy();
+        // this.heatmap.$destroy();
     }
 } 
+
+export const getProjectActivityHistory = (projectPath: string, activityHistoryList: ActivityHistory[]): ActivityHistory | null => {
+  for (let index = 0; index < activityHistoryList.length; index++) {
+      if (projectPath == activityHistoryList[index].path) {
+          return activityHistoryList[index]
+      }
+  }
+  return null
+}
