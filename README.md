@@ -1,6 +1,6 @@
 # Obsidian Home Tab & Activity History
 
-Home Tab 插件魔改，在 Home Tab 插件的 New Tab 界面下方添加了 Activity History 插件用到的 svelte-heatmap。热力图每20s记录库的 md 文件的总字节大小变化来确定颜色深浅，间隔时间可以自行设置。
+Home Tab 插件魔改，在 Home Tab 插件的 New Tab 界面下方添加了 Activity History 插件用到的 svelte-heatmap。热力图每20s记录库的 md 文件的总字节大小变化来确定颜色深浅，间隔时间可以自行设置。和 Acitivity History 一样，该插件只能记录从安装了插件之后的文件大小变化。
 
 觉得好用也可以给这三个项目点点 star。
 
