@@ -14,9 +14,9 @@
     import Heatmap from './heatmap.svelte';
     
     
+    export let plugin: HomeTab
     export let view: View
     export let HomeTabSearchBar: HomeTabSearchBar
-    export let plugin: HomeTab
     export let embeddedView: EmbeddedHomeTab | undefined = undefined
     export let homeTabHeapMap: HomeTabHeatMap | undefined = undefined
 

@@ -85,13 +85,13 @@ export class HomeTabView extends FileView{
 
         // Get activity history for specified project
         let settings = this.plugin.settings
-        let activity = getProjectActivityHistory("/", settings.activityHistory)?.size
+        let activity = settings.activityHistory
         let currentYear = new Date().getFullYear().toString();
         // if no activity history available add placeholder
         if (!activity) {
           activity = [{ date: `${currentYear}-01-01`, value: 0 }]
         }
-        this.heatmap = new HomeTabHeatMap(new Date().getFullYear().toString(), activity)
+        this.heatmap = new HomeTabHeatMap(plugin.settings)
     }
 
     getViewType() {
@@ -114,46 +114,10 @@ export class HomeTabView extends FileView{
         });
         this.searchBar.load()
         this.searchBar.focusSearchbar()
-
-
-        // // Get activity history for specified project
-        // let settings = this.plugin.settings
-        // let activity = getProjectActivityHistory("/", settings.activityHistory)?.size
-        // let currentYear = new Date().getFullYear().toString();
-        // // if no activity history available add placeholder
-        // if (!activity) {
-        //   activity = [{ date: `${currentYear}-01-01`, value: 0 }]
-        // }
-
-        // this.heatmap = new HeapMap({
-        //     target: this.contentEl,
-        //     props: {
-        //       year: new Date().getFullYear().toString(),
-        //       data: activity,
-        //       colors: [settings.activityColor1, settings.activityColor2, settings.activityColor3, settings.activityColor4],
-        //       textColor: settings.textColor,
-        //       emptyColor: settings.emptyColor,
-        //       cellRadius: settings.cellRadius,
-        //       type: settings.type
-        //     }
-        // })
-
-        // this.fileSuggester = new HomeTabFileSuggester(this.app, this.plugin, this,
-            // get(this.searchBarEl), get(this.suggestionContainerEl))
     }
 
     async onClose(): Promise<void>{
         this.searchBar.fileSuggester.close()
         this.homepage.$destroy();
-        // this.heatmap.$destroy();
     }
 } 
-
-export const getProjectActivityHistory = (projectPath: string, activityHistoryList: ActivityHistory[]): ActivityHistory | null => {
-  for (let index = 0; index < activityHistoryList.length; index++) {
-      if (projectPath == activityHistoryList[index].path) {
-          return activityHistoryList[index]
-      }
-  }
-  return null
-}

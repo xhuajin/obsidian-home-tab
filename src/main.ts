@@ -6,178 +6,180 @@ import { RecentFileManager } from './recentFiles';
 import { bookmarkedFilesManager } from './bookmarkedFiles';
 import { updateActivityAll } from './utils/updateActivityAll';
 
-declare module 'obsidian'{
-	interface App{
-		internalPlugins: InternalPlugins
-		plugins: Plugins
-		dom: any
-		isMobile: boolean
-	}
-	interface InternalPlugins{
-		getPluginById: Function
-		plugins: {
-			bookmarks: BookmarksPlugin
-		}
-	}
-	interface Plugins{
-		getPlugin: (id: string) => Plugin
-	}
-	interface BookmarksPlugin extends Plugin{
-		instance: {
-			items: BookmarkItem[]
-			getBookmarks: () => BookmarkItem[]
-			removeItem: (item: BookmarkItem) => void
-		}
-	}
-	interface BookmarkItem{
-		type: string,
-		title: string | undefined,
-		path: string
-	}
-	interface config{
-		nativeMenus: boolean
-	}
-	interface Vault{
-		config: config
-	}
-	interface Workspace{
-		createLeafInTabGroup: Function
-	}
-	interface WorkspaceLeaf{
-		rebuildView: Function
-		parent: WorkspaceSplit
-		activeTime: number
-		app: App
-	}
-	interface WorkspaceSplit{
-		children: WorkspaceLeaf[]
-	}
-	interface TFile{
-		deleted: boolean
-	}
+declare module 'obsidian' {
+    interface App {
+        internalPlugins: InternalPlugins
+        plugins: Plugins
+        dom: any
+        isMobile: boolean
+    }
+    interface InternalPlugins {
+        getPluginById: Function
+        plugins: {
+            bookmarks: BookmarksPlugin
+        }
+    }
+    interface Plugins {
+        getPlugin: (id: string) => Plugin
+    }
+    interface BookmarksPlugin extends Plugin {
+        instance: {
+            items: BookmarkItem[]
+            getBookmarks: () => BookmarkItem[]
+            removeItem: (item: BookmarkItem) => void
+        }
+    }
+    interface BookmarkItem {
+        type: string,
+        title: string | undefined,
+        path: string
+    }
+    interface config {
+        nativeMenus: boolean
+    }
+    interface Vault {
+        config: config
+    }
+    interface Workspace {
+        createLeafInTabGroup: Function
+    }
+    interface WorkspaceLeaf {
+        rebuildView: Function
+        parent: WorkspaceSplit
+        activeTime: number
+        app: App
+    }
+    interface WorkspaceSplit {
+        children: WorkspaceLeaf[]
+    }
+    interface TFile {
+        deleted: boolean
+    }
 }
 
 export default class HomeTab extends Plugin {
-	settings: HomeTabSettings;
-	recentFileManager: RecentFileManager
-	bookmarkedFileManager: bookmarkedFilesManager
-	activeEmbeddedHomeTabViews: EmbeddedHomeTab[]
-	
-	async onload() {
-		console.log('Loading home-tab plugin')
-		
-		await this.loadSettings();
-		this.addSettingTab(new HomeTabSettingTab(this.app, this))
-		this.registerView(VIEW_TYPE, (leaf) => new HomeTabView(leaf, this));		
+    settings: HomeTabSettings;
+    recentFileManager: RecentFileManager
+    bookmarkedFileManager: bookmarkedFilesManager
+    activeEmbeddedHomeTabViews: EmbeddedHomeTab[]
 
-		// Replace new tabs with home tab view
-		this.registerEvent(this.app.workspace.on('layout-change', () => this.onLayoutChange()))
-		// Refocus search bar on leaf change
-		this.registerEvent(this.app.workspace.on('active-leaf-change', (leaf: WorkspaceLeaf) => {if(leaf.view instanceof HomeTabView){leaf.view.searchBar.focusSearchbar()}}))
+    async onload() {
+        console.log('Loading home-tab plugin')
 
-		pluginSettingsStore.set(this.settings) // Store the settings for the svelte components
+        await this.loadSettings();
+        this.addSettingTab(new HomeTabSettingTab(this.app, this))
+        this.registerView(VIEW_TYPE, (leaf) => new HomeTabView(leaf, this));
 
-		this.activeEmbeddedHomeTabViews = []
+        // Replace new tabs with home tab view
+        this.registerEvent(this.app.workspace.on('layout-change', () => this.onLayoutChange()))
+        // Refocus search bar on leaf change
+        this.registerEvent(this.app.workspace.on('active-leaf-change', (leaf: WorkspaceLeaf) => { if (leaf.view instanceof HomeTabView) { leaf.view.searchBar.focusSearchbar() } }))
 
-		this.recentFileManager = new RecentFileManager(app, this)
-		this.recentFileManager.load()
+        pluginSettingsStore.set(this.settings) // Store the settings for the svelte components
 
-    // Update all tracked projects on events
-		setInterval(() => {
-			updateActivityAll(this, this.settings, this.app.vault.getMarkdownFiles());
-			this.saveSettings();
-		  }, 200000);
+        this.activeEmbeddedHomeTabViews = []
 
-		this.addCommand({
-			id: 'open-new-home-tab',
-			name: 'Open new Home tab',
-			callback: () => this.activateView(false, true)})
-		this.addCommand({
-			id: 'open-home-tab',
-			name: 'Replace current tab',
-			callback: () => this.activateView(true)})
+        this.recentFileManager = new RecentFileManager(app, this)
+        this.recentFileManager.load()
 
-		// Wait for all plugins to load before check if the bookmarked plugin is enabled
-		this.app.workspace.onLayoutReady(() => {
-			if(this.app.internalPlugins.getPluginById('bookmarks')){
-				this.bookmarkedFileManager = new bookmarkedFilesManager(app, this, bookmarkedFiles)
-				this.bookmarkedFileManager.load()
-			}
+        // Update all tracked projects on events
+        setInterval(() => {
+            console.log('111');
+            updateActivityAll(this.settings, this.app.vault.getMarkdownFiles());
+            this.saveSettings();
+        }, this.settings.updateInterval);
 
-			this.registerMarkdownCodeBlockProcessor('search-bar', (source, el, ctx) => {
-				const view = this.app.workspace.getActiveViewOfType(MarkdownView)
-				if(view){
-					let embeddedHomeTab = new EmbeddedHomeTab(el, view, this, source)
-					this.activeEmbeddedHomeTabViews.push(embeddedHomeTab)
-					ctx.addChild(embeddedHomeTab)
-				}
-			})
+        this.addCommand({
+            id: 'open-new-home-tab',
+            name: 'Open new Home tab',
+            callback: () => this.activateView(false, true)
+        })
+        this.addCommand({
+            id: 'open-home-tab',
+            name: 'Replace current tab',
+            callback: () => this.activateView(true)
+        })
 
-			if(this.settings.newTabOnStart){
-				// If an Home tab leaf is already open focus it
-				const leaves = app.workspace.getLeavesOfType(VIEW_TYPE)
-				if(leaves.length > 0){
-					app.workspace.revealLeaf(leaves[0])
-					// If more than one home tab leaf is open close them
-					leaves.forEach((leaf, index) => {
-						if(index < 1) return
-						leaf.detach()
-					})
-				}
-				else{
-					this.activateView(false, true)
-				}
-				// Close all other open leaves
-				if(this.settings.closePreviousSessionTabs){
-					// Get open leaves type
-					const leafTypes: string[] = []
-					app.workspace.iterateRootLeaves((leaf) => {
-						const leafType = leaf.view.getViewType()
-						if(leafTypes.indexOf(leafType) === -1 && leafType != VIEW_TYPE){
-							leafTypes.push(leafType)
-						}
-					})
-					leafTypes.forEach((type) => app.workspace.detachLeavesOfType(type))
-				}
-			}
-		})
-	}
+        // Wait for all plugins to load before check if the bookmarked plugin is enabled
+        this.app.workspace.onLayoutReady(() => {
+            if (this.app.internalPlugins.getPluginById('bookmarks')) {
+                this.bookmarkedFileManager = new bookmarkedFilesManager(app, this, bookmarkedFiles)
+                this.bookmarkedFileManager.load()
+            }
 
-	onunload(): void {
-		this.app.workspace.detachLeavesOfType(VIEW_TYPE)
-		this.activeEmbeddedHomeTabViews.forEach(view => view.unload())
-		this.recentFileManager.unload()
-		this.bookmarkedFileManager.unload()
-	}
+            this.registerMarkdownCodeBlockProcessor('search-bar', (source, el, ctx) => {
+                const view = this.app.workspace.getActiveViewOfType(MarkdownView)
+                if (view) {
+                    let embeddedHomeTab = new EmbeddedHomeTab(el, view, this, source)
+                    this.activeEmbeddedHomeTabViews.push(embeddedHomeTab)
+                    ctx.addChild(embeddedHomeTab)
+                }
+            })
 
-	async loadSettings(): Promise<void> {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData())
-	}
+            if (this.settings.newTabOnStart) {
+                // If an Home tab leaf is already open focus it
+                const leaves = app.workspace.getLeavesOfType(VIEW_TYPE)
+                if (leaves.length > 0) {
+                    app.workspace.revealLeaf(leaves[0])
+                    // If more than one home tab leaf is open close them
+                    leaves.forEach((leaf, index) => {
+                        if (index < 1) return
+                        leaf.detach()
+                    })
+                }
+                else {
+                    this.activateView(false, true)
+                }
+                // Close all other open leaves
+                if (this.settings.closePreviousSessionTabs) {
+                    // Get open leaves type
+                    const leafTypes: string[] = []
+                    app.workspace.iterateRootLeaves((leaf) => {
+                        const leafType = leaf.view.getViewType()
+                        if (leafTypes.indexOf(leafType) === -1 && leafType != VIEW_TYPE) {
+                            leafTypes.push(leafType)
+                        }
+                    })
+                    leafTypes.forEach((type) => app.workspace.detachLeavesOfType(type))
+                }
+            }
+        })
+    }
 
-	async saveSettings(): Promise<void> {
-		await this.saveData(this.settings)
-		pluginSettingsStore.update(() => this.settings)
-	}
+    onunload(): void {
+        this.app.workspace.detachLeavesOfType(VIEW_TYPE)
+        this.activeEmbeddedHomeTabViews.forEach(view => view.unload())
+        this.recentFileManager.unload()
+        this.bookmarkedFileManager.unload()
+    }
 
-	private onLayoutChange(): void{
-		if(this.settings.replaceNewTabs){
-			this.activateView()
-		}
-	}
+    async loadSettings(): Promise<void> {
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData())
+    }
 
-	public activateView(overrideView?: boolean, openNewTab?: boolean):void {
-		const leaf = openNewTab ? app.workspace.getLeaf('tab') : app.workspace.getMostRecentLeaf()
-		// const leaf = newTab ? app.workspace.getLeaf() : app.workspace.getMostRecentLeaf()
-		if(leaf && (overrideView || leaf.getViewState().type === 'empty')){
-			leaf.setViewState({
-				type: VIEW_TYPE,
-			})
-			// Focus newly opened tab
-			if(openNewTab){app.workspace.revealLeaf(leaf)}
-		}
-	}
+    async saveSettings(): Promise<void> {
+        await this.saveData(this.settings)
+        pluginSettingsStore.update(() => this.settings)
+    }
 
-	public refreshOpenViews(): void {
-		this.app.workspace.getLeavesOfType(VIEW_TYPE).forEach((leaf) => leaf.rebuildView())
-	}
+    private onLayoutChange(): void {
+        if (this.settings.replaceNewTabs) {
+            this.activateView()
+        }
+    }
+
+    public activateView(overrideView?: boolean, openNewTab?: boolean): void {
+        const leaf = openNewTab ? app.workspace.getLeaf('tab') : app.workspace.getMostRecentLeaf()
+        if (leaf && (overrideView || leaf.getViewState().type === 'empty')) {
+            leaf.setViewState({
+                type: VIEW_TYPE,
+            })
+            // Focus newly opened tab
+            if (openNewTab) { app.workspace.revealLeaf(leaf) }
+        }
+    }
+
+    public refreshOpenViews(): void {
+        this.app.workspace.getLeavesOfType(VIEW_TYPE).forEach((leaf) => leaf.rebuildView())
+    }
 }
