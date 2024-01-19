@@ -554,34 +554,40 @@ export class HomeTabSettingTab extends PluginSettingTab {
         containerEl.createEl('h2', { text: 'Heatmap settings' });
 
         new Setting(containerEl)
-            .setName('Year:')
+            .setName('Year')
             .setDesc('Year of data that you want to display.')
             .addText(text => text
-                .setPlaceholder("" + this.plugin.settings.year)
+                .setPlaceholder(new Date().getFullYear().toString())
+                .setValue(this.plugin.settings.year)
                 .onChange(async (value) => {
                     // check if valid interval number
-                    let year = parseInt(value, 10);
-                    if (!isNaN(year)) {
+                    let newYear = parseInt(value, 10);
+                    console.log(newYear)
+                    if (isNaN(newYear)) {
                         return
                     }
-                    this.plugin.settings.updateInterval = Number(value);
-                    await this.plugin.saveSettings();
-                }));
+                    this.plugin.settings.year = value;
+                    this.plugin.saveSettings();
+                }))
+            .then((settingEl) => this.addResetButton(settingEl, 'year'))
 
         new Setting(containerEl)
             .setName('Update Interval:')
             .setDesc('Time between each update in milliseconds. Default is 20000.')
             .addText(text => text
-                .setPlaceholder("" + this.plugin.settings.updateInterval)
+                .setValue(this.plugin.settings.updateInterval.toString())
+                .setPlaceholder("20000")
                 .onChange(async (value) => {
+                    text.inputEl.type = 'number';
                     // check if valid interval number
                     let newInterval = parseInt(value, 10);
                     if (!isNaN(newInterval)) {
                         return
                     }
                     this.plugin.settings.updateInterval = Number(value);
-                    await this.plugin.saveSettings();
-                }));
+                    this.plugin.saveSettings();
+                }))
+            .then((settingEl) => this.addResetButton(settingEl, 'updateInterval'))
 
         new Setting(containerEl)
             .setName('Heatmap Type:')
